@@ -1,0 +1,9 @@
+*
+!.gitignore
+!/all
+!/all/hook_utils.lua
+!/all/director.lua
+!/TH/**
+!mod.lua
+!README.md
+!TH
