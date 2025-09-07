@@ -41,6 +41,7 @@ function my_hook:init()
     end
 
 	HOOK(E, "load", self.E.load)
+	HOOK(game, "update", self.game.update)
 	HOOK(LU, "load_data", self.LU.load_data)
 
     self.ok = true
@@ -52,92 +53,40 @@ function my_hook.E.load(origin, self)
 	load_TH()
 end
 
--- 按钮
-function my_hook.hero_room.init(origin, self, sw, sh)
-    origin(self, sw, sh)
+-- 加速减速快捷键
+game.upd = 0
 
-    if screen_map.user_data.liuhui == nil then
-        screen_map.user_data.liuhui = {}
-        screen_map.user_data.liuhui.balance_hero = false
-        -- screen_map.user_data.liuhui.balance_hero_level = false
-    end
-
-	local kr3_y_offset = IS_KR3 and 4 or 0
-    -- 是否开启补强按钮
-    local balance_hero_button = GGButton:new("heroroom_btnDone_large_0001", "heroroom_btnDone_large_0002")
-    local done_button = self.done_button
-
-    balance_hero_button.anchor = v(math.floor(done_button.size.x / 2), done_button.size.y / 2)
-    balance_hero_button.pos = v(self.back.size.x - 770 - done_button.size.x - 20, self.back.size.y - 32)
-    balance_hero_button.label.size = v(100, 34)
-    balance_hero_button.label.text_size = done_button.label.size
-    balance_hero_button.label.pos = v(20, 19)
-    balance_hero_button.label.font_size = 24
-    balance_hero_button.label.vertical_align = CJK("middle-caps", "middle", "middle", "middle")
-    balance_hero_button.label.text = screen_map.user_data.liuhui.balance_hero and _("FLBALANCE") or _("FLSTANDARD")
-    balance_hero_button.label.fit_lines = 1
-    function balance_hero_button.on_click()
-        screen_map.user_data.liuhui.balance_hero = not screen_map.user_data.liuhui.balance_hero
-        storage:save_slot(screen_map.user_data)
-
-        E.entities = copy(upgrades_hero.old.templates)
-        scripts = copy(scripts_UH.old.scripts)
-        scripts5 = copy(scripts_UH.old.scripts5)
-		-- U = copy(scripts_UH.old.utils)
-
-        if screen_map.user_data.liuhui and screen_map.user_data.liuhui.balance_hero then
-            load_UH()
-        end
-        -- load_UF()
-        UPGR:patch_templates(5)
-        self:construct_hero(self.selected_index)
-
-        self.balance_hero_button.label.text = screen_map.user_data.liuhui.balance_hero and _("FLBALANCE") or _("FLSTANDARD")
-
-        S:queue("GUIButtonCommon")
-    end
-
-    self.back:add_child(balance_hero_button)
-    self.balance_hero_button = balance_hero_button
-
-	local cheat_up = KImageView:new("heroroom_012")
-
-	cheat_up.pos = v(75, 36 + kr3_y_offset + 50)
-	cheat_up.anchor = v(cheat_up.size.x / 2, cheat_up.size.y / 2)
-
-	function cheat_up.on_click()
-		local user_data = storage:load_slot()
-		local hero = get_hero_stats(self.selected_index)
-		local status = user_data.heroes.status[hero.name]
-
-		if hero_game_ver(hero.name) == 1 and hero.level < 10 then
-			local function creat_status_1(slot, hero)
-				if not slot.heroes.status_1 then
-					slot.heroes.status_1 = {}
-				end
-
-				if not slot.heroes.status_1[hero.name] then
-					slot.heroes.status_1[hero.name] = {
-						xp = 0
-					}
-				end
-
-				return slot.heroes.status_1[hero.name]
-			end
-			local status_1 = creat_status_1(user_data, hero)
-			status_1.xp = GS.hero_xp_thresholds[hero.level]
-		end
-
-		if hero.level < 10 then
-			status.xp = GS.hero_xp_thresholds[hero.level]
-		end
-		
-		storage:save_slot(user_data)
-		self:construct_hero(self.selected_index)
+function my_hook.game.update(origin, self, dt)
+	if DEBUG then
+		self:update_debug(dt)
 	end
 
-	self.back:add_child(cheat_up)
-	self.cheat_up = cheat_up
+	if love.keyboard.isDown("x") then
+		if self.upd == 8 then
+			self.simulation:update(dt)
+			self.upd = 0
+		else
+			self.upd = self.upd + 1
+		end
+	elseif love.keyboard.isDown("z") then
+		for i = 1, 3 do
+			self.simulation:update(dt)
+		end
+	elseif self.DBG_TIME_MULT then
+		if self.DBG_TIME_MULT < 1 then
+			local new_dt = dt * self.DBG_TIME_MULT
+
+			self.simulation:update(new_dt)
+		else
+			for i = 1, self.DBG_TIME_MULT do
+				self.simulation:update(dt)
+			end
+		end
+	else
+		self.simulation:update(dt)
+	end
+
+	self.game_gui:update(dt)
 end
 
 -- 加载关卡数据

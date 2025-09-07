@@ -13,16 +13,16 @@ local TH_revise = {}
 
 function TH_revise:game_settings()
 	GS.difficulty_enemy_hp_max_factor = {	-- 血量倍率
-		0.8,
+		0.9,
 		1,
-		1.15,
-		1.3
+		1.2,
+		1.35
 	}
 	GS.difficulty_enemy_speed_factor = {	-- 速度倍率
 		1,
 		1,
 		1.05,
-		1.13
+		1.15
 	}
 	GS.hero_xp_gain_per_difficulty_mode = {	-- 英雄经验倍率
 		[DIFFICULTY_EASY] = 0.75,
@@ -64,7 +64,6 @@ function TH_revise.templates()
 	for i = 1, 4 do
 		T("tower_stage_20_arborean_barrack").render.sprites[i].scale = vv(0.85)
 	end
-
 end
 
 return TH_revise
