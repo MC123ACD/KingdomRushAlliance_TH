@@ -3,6 +3,7 @@
 !/all
 !/all/hook_utils.lua
 !/all/director.lua
+!/TH/
 !/TH/**
 !mod.lua
 !README.md

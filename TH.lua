@@ -10,7 +10,13 @@ local DI = require("difficulty")
 local game = require("game")
 local game_gui = require("game_gui")
 local i18n = require("i18n")
+local TH_revise = require("TH.TH_revise")
 local v = V.v
+
+local function load_TH()
+	TH_revise:game_settings()
+	TH_revise:templates()
+end
 
 local my_hook = {
     ok = false
@@ -34,9 +40,16 @@ function my_hook:init()
         return
     end
 
+	HOOK(E, "load", self.E.load)
 	HOOK(LU, "load_data", self.LU.load_data)
 
     self.ok = true
+end
+
+function my_hook.E.load(origin, self)
+	origin(self)
+
+	load_TH()
 end
 
 -- 按钮
@@ -127,18 +140,21 @@ function my_hook.hero_room.init(origin, self, sw, sh)
 	self.cheat_up = cheat_up
 end
 
--- 加载地图数据
+-- 加载关卡数据
 function my_hook.LU.load_data(origin, store, name, pos)
+	local data
 	local fn = "TH/levels/" .. store.level_name .. "new_data.lua"
-	local data = LU.eval_file(fn)
+	local success, err = LU.eval_file(fn)
 
-	if not data then
+	if not success and err then
 		fn = KR_PATH_GAME .. "/data/levels/" .. store.level_name .. "_data.lua"
 		data = LU.eval_file(fn)
 
 		if not data then
 			return nil
 		end
+	else
+		data = LU.eval_file(fn)
 	end
 
 	local ov = data.level_mode_overrides[store.level_mode]
@@ -153,6 +169,41 @@ function my_hook.LU.load_data(origin, store, name, pos)
 
 		data._before_ov = _before_ov
 	end
+
+	return data
+end
+
+-- 加载
+function my_hook.LU.eval_file(filename)
+	local f, err = love.filesystem.load(filename)
+
+	if err then
+		log.info("Error loading file %s: %s", fullname, err)
+
+		return nil, err
+	end
+
+	local env = {}
+
+	env.V = V
+	env.v = V.v
+	env.r = V.r
+	env.km = km
+
+	function env.fts(v)
+		return v / FPS
+	end
+
+	env.math = math
+
+	local cf = KR_PATH_ALL .. "/constants.lua"
+	local c = love.filesystem.load(cf)
+
+	setfenv(c, env)
+	c()
+	setfenv(f, env)
+
+	local data = f()
 
 	return data
 end
