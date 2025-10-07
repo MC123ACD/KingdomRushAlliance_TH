@@ -55,6 +55,14 @@ function TH_revise.templates()
 		end
 	end
 
+	-- 调整12-16关全视魔眼大小
+	for i = 1, 3 do
+		T("decal_terrain_3_glare_eye_big").render.sprites[i].scale = vv(0.85)
+		T("decal_terrain_3_glare_eye_big_stage_14").render.sprites[i].scale = vv(0.85)
+		T("decal_terrain_3_glare_eye_big_stage_15").render.sprites[i].scale = vv(0.85)
+		T("decal_stage_16_glare_eye_big").render.sprites[i].scale = vv(0.85)
+	end
+
 	-- 调整20关养蜂人大小
 	for i = 1, 5 do
 		T("tower_stage_20_arborean_honey").render.sprites[i].scale = vv(0.75)

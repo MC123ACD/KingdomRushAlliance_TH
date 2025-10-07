@@ -45,7 +45,6 @@ end
 --]]
 
 require("main_globals")
-require("gg_views_custom")
 require("constants")
 require("klove.kui")
 require("klua.table")
@@ -69,7 +68,7 @@ SU = require("script_utils")
 U = require("utils")
 
 if KR_GAME == "kr5" then
-    balance = require("balance/balance")
+    balance = require("data.balance.balance")
 end
 
 --- 帧转秒

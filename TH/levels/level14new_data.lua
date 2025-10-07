@@ -70,8 +70,8 @@ return {
             decal_ground = "decal_stage_14_glare_1",
             ["editor.game_mode"] = 1,
             pos = {
-                x = 332,
-                y = 314
+                x = 316,
+                y = 303
             },
             waves = {
                 {
@@ -169,8 +169,8 @@ return {
                 "decal_terrain_3_glare_eye_small_3_stage_14"
             },
             pos = {
-                x = 761,
-                y = 420
+                x = 752,
+                y = 409
             },
             waves = {
                 {
@@ -394,8 +394,8 @@ return {
         {
             template = "decal_stage_14_mask_4",
             pos = {
-                x = 1011,
-                y = 421
+                x = 1063,
+                y = 429
             }
         },
         {
@@ -480,6 +480,36 @@ return {
             template = "tower_holder_blocked_terrain_3",
             ["editor.game_mode"] = 0,
             pos = {
+                x = 732,
+                y = 176
+            },
+            ["tower.default_rally_pos"] = {
+                x = 628,
+                y = 155
+            },
+            ["tower.holder_id"] = "10",
+            ["tower.terrain_style"] = 5,
+            ["ui.nav_mesh_id"] = "10"
+        },
+        {
+            template = "tower_holder_blocked_terrain_3",
+            ["editor.game_mode"] = 0,
+            pos = {
+                x = 904,
+                y = 269
+            },
+            ["tower.default_rally_pos"] = {
+                x = 850,
+                y = 232
+            },
+            ["tower.holder_id"] = "13",
+            ["tower.terrain_style"] = 5,
+            ["ui.nav_mesh_id"] = "13"
+        },
+        {
+            template = "tower_holder_blocked_terrain_3",
+            ["editor.game_mode"] = 0,
+            pos = {
                 x = 640,
                 y = 291
             },
@@ -495,8 +525,8 @@ return {
             template = "tower_holder_blocked_terrain_3",
             ["editor.game_mode"] = 0,
             pos = {
-                x = 216,
-                y = 347
+                x = 215,
+                y = 413
             },
             ["tower.default_rally_pos"] = {
                 x = 196,
@@ -510,8 +540,8 @@ return {
             template = "tower_holder_blocked_terrain_3",
             ["editor.game_mode"] = 0,
             pos = {
-                x = 796,
-                y = 406
+                x = 805,
+                y = 428
             },
             ["tower.default_rally_pos"] = {
                 x = 636,
@@ -520,21 +550,6 @@ return {
             ["tower.holder_id"] = "8",
             ["tower.terrain_style"] = 5,
             ["ui.nav_mesh_id"] = "8"
-        },
-        {
-            template = "tower_holder_blocked_terrain_3",
-            ["editor.game_mode"] = 0,
-            pos = {
-                x = 732,
-                y = 176
-            },
-            ["tower.default_rally_pos"] = {
-                x = 628,
-                y = 155
-            },
-            ["tower.holder_id"] = "10",
-            ["tower.terrain_style"] = 5,
-            ["ui.nav_mesh_id"] = "10"
         },
         {
             template = "tower_holder_sea_of_trees_5",
@@ -570,31 +585,16 @@ return {
             template = "tower_holder_blocked_terrain_3",
             ["editor.game_mode"] = 0,
             pos = {
-                x = 904,
-                y = 269
+                x = 932,
+                y = 320
             },
             ["tower.default_rally_pos"] = {
-                x = 850,
-                y = 232
+                x = 870,
+                y = 388
             },
-            ["tower.holder_id"] = "13",
+            ["tower.holder_id"] = "14",
             ["tower.terrain_style"] = 5,
-            ["ui.nav_mesh_id"] = "13"
-        },
-        {
-            template = "tower_holder_sea_of_trees_5",
-            ["editor.game_mode"] = 0,
-            pos = {
-                x = 304,
-                y = 288
-            },
-            ["tower.default_rally_pos"] = {
-                x = 322,
-                y = 222
-            },
-            ["tower.holder_id"] = "5",
-            ["tower.terrain_style"] = 5,
-            ["ui.nav_mesh_id"] = "5"
+            ["ui.nav_mesh_id"] = "14"
         },
         {
             template = "tower_holder_sea_of_trees_5",
@@ -606,6 +606,21 @@ return {
             ["tower.default_rally_pos"] = {
                 x = 462,
                 y = 312
+            },
+            ["tower.holder_id"] = "5",
+            ["tower.terrain_style"] = 5,
+            ["ui.nav_mesh_id"] = "5"
+        },
+        {
+            template = "tower_holder_sea_of_trees_5",
+            ["editor.game_mode"] = 0,
+            pos = {
+                x = 232,
+                y = 325
+            },
+            ["tower.default_rally_pos"] = {
+                x = 322,
+                y = 222
             },
             ["tower.holder_id"] = "5",
             ["tower.terrain_style"] = 5,
@@ -645,27 +660,12 @@ return {
             template = "tower_holder_sea_of_trees_5",
             ["editor.game_mode"] = 0,
             pos = {
-                x = 943,
-                y = 333
+                x = 973,
+                y = 361
             },
             ["tower.default_rally_pos"] = {
-                x = 870,
-                y = 388
-            },
-            ["tower.holder_id"] = "14",
-            ["tower.terrain_style"] = 5,
-            ["ui.nav_mesh_id"] = "14"
-        },
-        {
-            template = "tower_holder_sea_of_trees_5",
-            ["editor.game_mode"] = 0,
-            pos = {
-                x = 723,
-                y = 402
-            },
-            ["tower.default_rally_pos"] = {
-                x = 642,
-                y = 381
+                x = 1049,
+                y = 322
             },
             ["tower.holder_id"] = "7",
             ["tower.terrain_style"] = 5,
