@@ -6,6 +6,6 @@ return {
     url = "https://tieba.baidu.com/p/10017751123",
     github_url = "https://github.com/MC123ACD/KingdomRushAlliance_TH",
     by = "MC123ACD",
-    enabled = false,
+    enabled = true,
     priority = 1
 }
