@@ -213,9 +213,9 @@ function director:init(params)
 			love.mouse.setCursor(self.cursor_up)
 		end
 	end
-	
-	local mod = require("mod")
-	mod:init()
+
+	local mod_utils = require("mods.mod_utils")
+	mod_utils:init()
 end
 
 function director:on_quit()

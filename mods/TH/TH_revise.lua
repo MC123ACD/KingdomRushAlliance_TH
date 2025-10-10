@@ -55,6 +55,20 @@ function TH_revise.templates()
 		end
 	end
 
+	-- 调整防御塔大小
+	local tower_templates = E:filter_templates("tower")
+	for _, t in pairs(tower_templates) do
+		local sprites = t.render.sprites
+
+		if sprites and #sprites > 0 then
+			for _, s in pairs(sprites) do
+				if s.scale then
+					s.scale = V.v(s.scale.x * 0.98, s.scale.y * 0.98)
+				end
+			end
+		end
+	end
+
 	-- 调整12-16关全视魔眼大小
 	for i = 1, 3 do
 		T("decal_terrain_3_glare_eye_big").render.sprites[i].scale = vv(0.85)

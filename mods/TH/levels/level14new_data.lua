@@ -70,8 +70,8 @@ return {
             decal_ground = "decal_stage_14_glare_1",
             ["editor.game_mode"] = 1,
             pos = {
-                x = 316,
-                y = 303
+                x = 302,
+                y = 300
             },
             waves = {
                 {
@@ -525,6 +525,21 @@ return {
             template = "tower_holder_blocked_terrain_3",
             ["editor.game_mode"] = 0,
             pos = {
+                x = 932,
+                y = 320
+            },
+            ["tower.default_rally_pos"] = {
+                x = 870,
+                y = 388
+            },
+            ["tower.holder_id"] = "14",
+            ["tower.terrain_style"] = 5,
+            ["ui.nav_mesh_id"] = "14"
+        },
+        {
+            template = "tower_holder_blocked_terrain_3",
+            ["editor.game_mode"] = 0,
+            pos = {
                 x = 215,
                 y = 413
             },
@@ -570,8 +585,8 @@ return {
             template = "tower_holder_sea_of_trees_5",
             ["editor.game_mode"] = 0,
             pos = {
-                x = 703,
-                y = 249
+                x = 694,
+                y = 238
             },
             ["tower.default_rally_pos"] = {
                 x = 600,
@@ -580,21 +595,6 @@ return {
             ["tower.holder_id"] = "4",
             ["tower.terrain_style"] = 5,
             ["ui.nav_mesh_id"] = "4"
-        },
-        {
-            template = "tower_holder_blocked_terrain_3",
-            ["editor.game_mode"] = 0,
-            pos = {
-                x = 932,
-                y = 320
-            },
-            ["tower.default_rally_pos"] = {
-                x = 870,
-                y = 388
-            },
-            ["tower.holder_id"] = "14",
-            ["tower.terrain_style"] = 5,
-            ["ui.nav_mesh_id"] = "14"
         },
         {
             template = "tower_holder_sea_of_trees_5",
