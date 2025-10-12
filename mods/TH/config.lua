@@ -6,5 +6,5 @@ return {
     url = "https://tieba.baidu.com/p/10017751123",
     by = "MC123ACD",
     enabled = true,
-    priority = 1
+    priority = 10
 }

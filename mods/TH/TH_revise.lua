@@ -1,5 +1,6 @@
 local log = require("klua.log"):new("TH_revise")
 
+local game_gui_data = require("data.game_gui_data")
 local GS = require("game_settings")
 
 local function vv(v1)
@@ -32,7 +33,7 @@ function TH_revise:game_settings()
 	}
 end
 
-function TH_revise.templates()
+function TH_revise:templates()
 	-- 增加怪物赏金
 	local enemy_templates = E:filter_templates("enemy")
 
@@ -86,6 +87,17 @@ function TH_revise.templates()
 	for i = 1, 4 do
 		T("tower_stage_20_arborean_barrack").render.sprites[i].scale = vv(0.85)
 	end
+end
+
+function TH_revise:game_gui_data()
+	-- 修改塔菜单位置
+	local ring_scale = 0.52
+	game_gui_data.tower_menu_button_places[1] = v(-82 * ring_scale, -131 * ring_scale)
+	game_gui_data.tower_menu_button_places[2] = v(82 * ring_scale, -131 * ring_scale)
+	game_gui_data.tower_menu_button_places[3] = v(-137 * ring_scale, 30 * ring_scale)
+	game_gui_data.tower_menu_button_places[4] = v(137 * ring_scale, 30 * ring_scale)
+	game_gui_data.tower_menu_button_places[5] = v(0 * ring_scale, 139 * ring_scale)
+	game_gui_data.tower_menu_button_places[6] = v(-150 * ring_scale, 165 * ring_scale)
 end
 
 return TH_revise
