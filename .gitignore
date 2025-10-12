@@ -1,10 +1,8 @@
 *
 !.gitignore
-!/all
-!/all/director.lua
 !/sequels/
 !/sequels/kviews_screen_map_sequels.lua
 !/mods/
 !/mods/**
 !README.md
-!TH.lua
+!main.lua

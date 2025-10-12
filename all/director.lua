@@ -63,6 +63,7 @@ function director:init(params)
 	end
 
 	KDB:init(kdb_path, DEBUG)
+
 	SH:init(KR_PATH_ASSETS_ALL_TARGET .. "/shaders", true)
 
 	local sound_paths = KR_PATH_ASSETS_GAME_FALLBACK or {
@@ -213,9 +214,6 @@ function director:init(params)
 			love.mouse.setCursor(self.cursor_up)
 		end
 	end
-
-	local mod_utils = require("mods.mod_utils")
-	mod_utils:init()
 end
 
 function director:on_quit()

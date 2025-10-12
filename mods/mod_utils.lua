@@ -1,22 +1,23 @@
--- chunkname: @./globals.lua
+-- chunkname: @./mods/mod_utils.lua
 local log = require("klua.log"):new("mod_utils")
 local IS_KR5 = KR_GAME == "kr5"
-local lfs = love.filesystem
+local FS = love.filesystem
 local mod_utils = {}
 
-local ppref
 if love.filesystem.isFused() then
-    ppref = ""
+    mod_utils.ppref = ""
 else
-    ppref = base_dir ~= work_dir and "" or "src/"
+    mod_utils.ppref = base_dir ~= work_dir and "" or "src/"
 end
 
---- 获取指定路径下的所有文件夹名
+--- 获取指定路径下的所有子目录名
+--- 
+--- 返回一个包含子目录信息的表，每个元素包含name(子目录名)和path(完整路径)
 ---@param path string 要扫描的目录路径
----@return table 包含文件夹信息的表，每个元素包含name(文件夹名)和path(完整路径)
-function mod_utils:get_folders(path)
-    -- 获取目录下所有文件和文件夹
-    local files = lfs.getDirectoryItems(path)
+---@return table 包含子目录信息的表
+function mod_utils:get_subdirs(path)
+    -- 获取目录下所有文件和子目录
+    local files = FS.getDirectoryItems(path)
 
     local folders = {}
 
@@ -35,11 +36,11 @@ function mod_utils:get_folders(path)
         local filepath = path .. "/" .. file
 
         -- 检查是否为目录
-        if lfs.isDirectory(filepath) then
-            -- 将文件夹信息添加到结果表中
+        if FS.isDirectory(filepath) then
+            -- 将目录信息添加到结果表中
             table.insert(folders, {
-                name = file,    -- 文件夹名称
-                path = filepath -- 文件夹完整路径
+                name = file,    -- 目录名称
+                path = filepath -- 目录完整路径
             })
         end
     end
@@ -51,6 +52,8 @@ end
 ---@param mod_data table 模组数据，包含模组路径等信息
 ---@return nil
 function mod_utils:add_path(mod_data)
+    self.kui_insert = self.kui_insert or {}
+
     -- 自定义格式化函数，将路径与模组名结合
     local function f(str, ...)
         local path = mod_data.path .. "/" .. str
@@ -68,35 +71,38 @@ function mod_utils:add_path(mod_data)
         log.debug("Added path at require: %s", "mods/?.lua")
     end
 
-    -- 获取模组下的所有文件夹，并将其添加到路径中
-    local mod_folder = self:get_folders(mod_data.path)
+    local mod_dirs = self:get_subdirs(mod_data.path)
 
-    -- 遍历模组下的所有文件夹
-    for _, folder in ipairs(mod_folder) do
-        -- kui_templates 特例单独处理（KUI模板系统特殊路径）
-        if folder.name == "kui_templates" then
-            local kui_db
+    -- 遍历模组下的所有目录
+    for _, dir in ipairs(mod_dirs) do
+        if table.contains(self.ignored_path, dir.name) then
+            log.debug("Ignored mod path: %s", dir.path)
+        elseif dir.name == "data" then
+            for _, data_dir in ipairs(self:get_subdirs(dir.path)) do
+                local kui_db
 
-            -- 根据运行环境选择不同的KUI数据库模块
-            if IS_KR5 then
-                kui_db = require("klove.kui_db")
-            else
-                kui_db = require("kui_db")
+                -- 根据运行环境选择不同的KUI数据库模块
+                if IS_KR5 then
+                    kui_db = require("klove.kui_db")
+                else
+                    kui_db = require("kui_db")
+                end
+
+                -- 将KUI模板路径添加到KUI数据库路径表中（优先级最高）
+                table.insert(kui_db.paths, 1, f("data/kui_templates"))
+
+                log.debug("Added path in kui_db: %s", f("kui_templates", dir.name))
             end
-
-            -- 将KUI模板路径添加到KUI数据库路径表中（优先级最高）
-            table.insert(kui_db.paths, 1, f("kui_templates"))
-            log.debug("Added path at kui_db: %s", f("kui_templates", folder.name))
         else
-            -- 将普通文件夹添加到require路径中
-            table.insert(additional_paths, f("%s/?.lua", folder.name))
-            log.debug("Added path at require: %s", f("%s/?.lua", folder.name))
+            -- 其他目录添加到require路径中
+            table.insert(additional_paths, f("%s/?.lua", dir.name))
+            log.debug("Added path in require: %s", f("%s/?.lua", dir.name))
         end
     end
 
-    -- 更新LFS和package的require路径
-    lfs.setRequirePath(table.concat(additional_paths, ";") .. ";" .. lfs.getRequirePath())
-    package.path = lfs.getRequirePath()
+    -- 更新FS和package的require路径
+    FS.setRequirePath(table.concat(additional_paths, ";") .. ";" .. FS.getRequirePath())
+    package.path = FS.getRequirePath()
     log.debug("Current package.path: %s", package.path)
 end
 
@@ -105,61 +111,52 @@ function mod_utils:table_tostring(t)
         return tostring(t)
     end
 
-    local max_items = 5 -- 限制显示的项目数量
     local items = {}
-    local count = 0
 
     for k, v in pairs(t) do
-        if count >= max_items then
-            table.insert(items, "...")
-            break
-        end
-
-        local key_str = type(k) == "string" and k or "[" .. tostring(k) .. "]"
         local value_str
         if type(v) == "string" then
-            value_str = '"' .. v .. '"'
-        elseif type(v) == "table" then
-            value_str = "{...}" -- 不递归显示嵌套表
+            value_str = v
         else
             value_str = tostring(v)
         end
 
-        table.insert(items, key_str .. "=" .. value_str)
-        count = count + 1
+        table.insert(items, value_str)
     end
 
-    return "{" .. table.concat(items, ", ") .. "}"
+    return table.concat(items, ", ")
 end
 
 --- 获取模组调试信息
 ---@param config table 模组配置表
 ---@return string 格式化的模组信息字符串
 function mod_utils:get_debug_info(config)
-    local f = string.format
+    local game_version = self:table_tostring(config.game_version)
+    local o = "\n"
+
+    local function f(...)
+        o = o .. string.format(...)
+    end
+
     -- 构建模组信息标题
-    local o = f("------------------- LOADED_MOD: %s -----------------------\n", config.name)
-    o = o .. f("name:           %s\n", config.name or "unknown")            -- 模组名称
-    o = o .. f("desc:           %s\n", config.desc or "unknown")            -- 模组描述
-    o = o .. f("version:        %s\n", config.version or "unknown")         -- 模组版本
-    o = o .. f("by:             %s\n", config.by or "unknown")              -- 作者信息
-    o = o .. f("url:            %s\n", config.url or "unknown")             -- 模组发布地址
-    o = o .. f("github_url:     %s\n", config.github_url or "unknown")      -- GitHub地址
-    o = o .. f("priority:       %s\n", config.priority or "unknown")   -- 优先级
-    o = o .. f("game_version:   %s", self:table_tostring(config.game_version))    -- 兼容游戏版本
+    f("------------------- LOADED_MOD: %s -----------------------\n", config.name)
+    f("%-9s: %-20s", "name", config.name or "unknown")           -- 模组名称
+    f(" | %-13s: %s\n", "version", config.version or "unknown")  -- 模组版本
+    f("%-9s: %-20s", "by", config.by or "unknown")               -- 作者信息
+    f(" | %-13s: %s\n", "game_version", game_version)            -- 兼容游戏版本
+    f("%-9s: %-20s\n", "priority", config.priority or "unknown") -- 优先级
+    f("%-9s: %s\n", "desc", config.desc or "unknown")            -- 模组描述
+    f("%-9s: %s", "url", config.url or "unknown")            -- 模组发布地址
 
     return o
 end
 
---- 初始化所有已启用的模组
----@return nil
-function mod_utils:init()
+function mod_utils:check_get_available_mods()
     local mods_data = {}
 
-    -- 获取所有模组文件夹
-    for _, mod_data in ipairs(self:get_folders("mods")) do
+    for _, mod_data in ipairs(self:get_subdirs("mods")) do
         -- 加载模组配置文件
-        local config = require(ppref .. mod_data.path .. ".config")
+        local config = require(self.ppref .. mod_data.path .. ".config")
 
         -- 检查是否是兼容游戏版本
         if type(config.game_version) == "string" and config.game_version == KR_GAME or type(config.game_version) == "table" and table.contains(config.game_version, KR_GAME) then
@@ -178,29 +175,21 @@ function mod_utils:init()
         end
     end
 
+    local ascending = {}
+
     if #mods_data > 0 then
         -- 根据优先级对模组进行降序排序（优先级高的先加载）
         table.sort(mods_data, function(a, b)
             return a.priority > b.priority
         end)
 
-        -- 按排序顺序初始化所有模组
-        for index, mod_data in ipairs(mods_data) do
-            -- 重新加载模组配置（确保获取最新配置）
-            local config = require(ppref .. mod_data.path .. ".config")
-
-            -- 添加模组路径到package.path
-            self:add_path(mod_data)
-            -- 加载并初始化模组
-            local mod = require(mod_data.name)
-            mod:init()
-
-            -- 记录模组加载信息
-            log.error(self:get_debug_info(config))
+        -- 根据优先级对模组进行升序排序
+        for i = #mods_data, 1, -1 do
+            table.insert(ascending, mods_data[i])
         end
-    else
-        log.debug("No mods to load.")
     end
+
+    return mods_data, ascending
 end
 
 --- 替换原函数
