@@ -13,18 +13,18 @@ function hook:init()
 end
 
 -- 加减速快捷键
-game.upd = 0
+game._speed_upd = 0
 function hook.game.update(origin, self, dt)
 	if DEBUG then
 		self:update_debug(dt)
 	end
 
 	if love.keyboard.isDown("x") then
-		if self.upd == 8 then
+		if self._speed_upd == 8 then
 			self.simulation:update(dt)
-			self.upd = 0
+			self._speed_upd = 0
 		else
-			self.upd = self.upd + 1
+			self._speed_upd = self._speed_upd + 1
 		end
 	elseif love.keyboard.isDown("z") then
 		for i = 1, 3 do
