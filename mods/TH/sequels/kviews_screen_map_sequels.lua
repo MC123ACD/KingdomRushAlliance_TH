@@ -2435,7 +2435,7 @@ function TowerRoomView:initialize(size, image_name, base_scale)
 		hsl.size.x = hrs_w * hrs_count
 	end
 
-	-- 第六个防御塔选择按钮
+	-- 创建第六个防御塔选择槽位
 	self.roster_sel_items = {
 		self:ci("button_tower_ring_sel_01"),
 		self:ci("button_tower_ring_sel_02"),
