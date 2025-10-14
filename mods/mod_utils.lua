@@ -162,7 +162,7 @@ function mod_utils:get_debug_info(config)
     f(" | %-13s: %s\n", "version", config.version or "unknown")  -- 模组版本
     f("%-9s: %-20s", "by", config.by or "unknown")               -- 作者信息
     f(" | %-13s: %s\n", "game_version", game_version)            -- 兼容游戏版本
-    f("%-9s: %-20s\n", "priority", config.priority or "unknown") -- 优先级
+    f("%-9s: %-20d\n", "priority", config.priority) -- 优先级
     f("%-9s: %s\n", "desc", config.desc or "unknown")            -- 模组描述
     f("%-9s: %s", "url", config.url or "unknown")                -- 模组发布地址
 
@@ -183,7 +183,7 @@ function mod_utils:check_get_available_mods()
             -- 检查模组是否启用且路径存在
             if config.enabled and love.filesystem.exists(mod_data.path) then
                 -- 添加优先级信息到模组数据中
-                mod_data["priority"] = config.priority
+                mod_data["priority"] = config.priority or 0
                 table.insert(mods_data, mod_data)
             else
                 log.error("%s is disabled!", mod_data.name)
@@ -253,16 +253,26 @@ function mod_utils.UNHOOK(obj, fn_name)
 end
 
 ---根据表修改指定动画
+---
+---若动画表中removed为真将会移除动画
 ---@param t table 表
+---@return table 增加的动画, table 删除的动画
 function mod_utils:a_db_reset(t)
-    local expanded_keys = {}
-    local deleted_keys = {}
+    local added_a = {}
+    local deleted_k = {}
 
     for k, v in pairs(t) do
+        if v.removed then
+            table.insert(deleted_k, k)
+
+            goto skip_add
+        end
+
         if v.layer_from and v.layer_to and v.layer_prefix then
             for i = v.layer_from, v.layer_to do
                 local nk = string.gsub(k, "layerX", "layer" .. i)
                 local nv = {
+                    fps = v.fps,
                     group = v.group,
                     pre = v.pre,
                     post = v.post,
@@ -273,26 +283,34 @@ function mod_utils:a_db_reset(t)
                     prefix = string.format(v.layer_prefix, i)
                 }
 
-                expanded_keys[nk] = nv
+                added_a[nk] = nv
 
-                table.insert(deleted_keys, k)
+                table.insert(deleted_k, k)
             end
-
-            table.insert(expanded_keys, k)
+        else
+            added_a[k] = v
         end
+
+        ::skip_add::
     end
 
-    for k, v in pairs(expanded_keys) do
-        if not v.frames then
+    for k, v in pairs(added_a) do
+        if IS_KR5 and not v.frames then
             A:expand_frames(v)
         end
 
-        A.db[k] = v
+        if not A.db[k] then
+            A.db[k] = v
+        else
+            table.merge(A.db[k], v)
+        end
     end
 
-    for k, v in pairs(deleted_keys) do
-        self.db[k] = nil
+    for _, v in ipairs(deleted_k) do
+        A.db[v] = nil
     end
+
+    return added_a, deleted_k
 end
 
 --[[
