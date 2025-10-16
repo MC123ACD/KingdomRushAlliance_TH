@@ -21,7 +21,8 @@ local PS = require("platform_services")
 local features = require("features")
 local kui_db = require("klove.kui_db")
 local mod_utils = require("mod_utils")
-local HOOK = mod_utils.HOOK
+local hook_utils = require("hook_utils")
+local HOOK = hook_utils.HOOK
 
 local my_hook = {}
 
@@ -31,8 +32,8 @@ function my_hook:init()
 	HOOK(E, "load", self.E.load)
 end
 
-function my_hook.E.load(origin, self)
-	origin(self)
+function my_hook.E.load(load, self)
+	load(self)
 
 	TH_revise:game_settings()
 	TH_revise:templates()

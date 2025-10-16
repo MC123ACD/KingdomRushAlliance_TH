@@ -3,6 +3,12 @@ local log = require("klua.log"):new("TH_revise")
 local game_gui_data = require("data.game_gui_data")
 local GS = require("game_settings")
 
+local function v(v1, v2)
+	return {
+		x = v1,
+		y = v2
+	}
+end
 local function vv(v1)
 	return {
 		x = v1,

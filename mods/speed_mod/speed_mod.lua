@@ -1,50 +1,51 @@
 local log = require("klua.log"):new("speed_mod")
 
 local mod_utils = require("mod_utils")
-local HOOK = mod_utils.HOOK
+local hook_utils = require("hook_utils")
+local HOOK = hook_utils.HOOK
 local game = require("game")
+local key_is_down = love.keyboard.isDown
 
 local hook = {}
 
 setmetatable(hook, auto_table_mt)
 
 function hook:init()
+	HOOK(game, "keypressed", self.game.keypressed)
 	HOOK(game, "update", self.game.update)
 end
 
 -- 加减速快捷键
-game._speed_upd = 0
-function hook.game.update(origin, self, dt)
-	if DEBUG then
-		self:update_debug(dt)
-	end
+function hook.game.keypressed(keypressed, self, key, isrepeat)
+	keypressed(self, key, isrepeat)
 
-	if love.keyboard.isDown("x") then
-		if self._speed_upd == 8 then
-			self.simulation:update(dt)
-			self._speed_upd = 0
-		else
-			self._speed_upd = self._speed_upd + 1
-		end
-	elseif love.keyboard.isDown("z") then
-		for i = 1, 3 do
-			self.simulation:update(dt)
-		end
-	elseif self.DBG_TIME_MULT then
-		if self.DBG_TIME_MULT < 1 then
-			local new_dt = dt * self.DBG_TIME_MULT
+	local config = hook.config
 
-			self.simulation:update(new_dt)
-		else
-			for i = 1, self.DBG_TIME_MULT do
-				self.simulation:update(dt)
-			end
+	if config.is_down_key then
+		if key_is_down(config.up_speed_key) then
+			self.DBG_TIME_MULT = config.up_speed_factor
+		elseif key_is_down(config.down_speed_key) then
+			self.DBG_TIME_MULT = config.down_speed_factor
 		end
 	else
-		self.simulation:update(dt)
+		if key == config.up_speed_key then
+			self.DBG_TIME_MULT = config.up_speed_factor
+		elseif key == config.down_speed_key then
+			self.DBG_TIME_MULT = config.down_speed_factor
+		elseif key == config.reset_speed_key then
+			self.DBG_TIME_MULT = 1
+		end
 	end
+end
 
-	self.game_gui:update(dt)
+function hook.game.update(update, self, dt)
+	update(self, dt)
+
+	local config = hook.config
+
+	if config.is_down_key and not (key_is_down(config.up_speed_key) or key_is_down(config.down_speed_key)) then
+		self.DBG_TIME_MULT = 1
+	end
 end
 
 return hook
