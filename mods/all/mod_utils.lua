@@ -13,18 +13,18 @@ end
 
 local mod_utils = {}
 
-mod_utils.ignored_path = {
+local ignored_path = {
     "_assets"
 }
 
-mod_utils.not_mod_path = {
+local not_mod_path = {
     "all"
 }
 
-mod_utils.ppref = ""
+local ppref = ""
 
 if not love.filesystem.isFused() then
-    mod_utils.ppref = base_dir ~= work_dir and "" or "src/"
+    ppref = base_dir == work_dir and "src/"
 end
 
 -- 元表：自动创建不存在表
@@ -38,13 +38,17 @@ mod_utils.auto_table_mt = {
     end
 }
 
+function mod_utils.get_ppref()
+    return ppref
+end
+
 --- 获取指定路径下的所有子目录名
 ---
 --- 返回一个包含子目录信息的表，每个元素包含name(子目录名)和path(完整路径)
 ---@param path string 要扫描的目录路径
 ---@param filter_fn function 过滤函数
 ---@return table 包含子目录信息的表
-function mod_utils:get_subdirs(path, filter_fn)
+function mod_utils.get_subdirs(path, filter_fn)
     -- 获取目录下所有文件和子目录
     local files = FS.getDirectoryItems(path)
 
@@ -66,7 +70,7 @@ function mod_utils:get_subdirs(path, filter_fn)
         local filepath = path .. "/" .. file
 
         -- 检查是否为目录
-        if not filter_fn or filter_fn(file, filepath) and not table.contains(self.ignored_path, file) and FS.isDirectory(filepath) then
+        if not filter_fn or filter_fn(file, filepath) and not table.contains(ignored_path, file) and FS.isDirectory(filepath) then
             -- 将目录信息添加到结果表中
             table.insert(folders, {
                 name = file,    -- 目录名称
@@ -81,9 +85,7 @@ end
 ---将模组所有目录添加到 package.path 中，以便 require 能够找到模组文件
 ---@param mod_data table 模组数据，包含模组路径等信息
 ---@return nil
-function mod_utils:add_path(mod_data)
-    self.kui_insert = self.kui_insert or {}
-
+function mod_utils.add_path(mod_data)
     -- 自定义格式化函数，将路径与模组名结合
     local function f(str, ...)
         local path = mod_data.path .. "/" .. str
@@ -96,9 +98,9 @@ function mod_utils:add_path(mod_data)
     }
 
     -- 遍历模组下的所有目录
-    for _, dir in ipairs(self:get_subdirs(mod_data.path)) do
+    for _, dir in ipairs(mod_utils.get_subdirs(mod_data.path)) do
         if dir.name == "data" then
-            for _, data_dir in ipairs(self:get_subdirs(dir.path)) do
+            for _, data_dir in ipairs(mod_utils.get_subdirs(dir.path)) do
                 local kui_db
 
                 -- 根据运行环境选择不同的KUI数据库模块
@@ -129,7 +131,7 @@ end
 --- 将表转化为字符串，返回的字符串无键值与大括号
 ---@param t table 表
 ---@return string 字符串
-function mod_utils:table_tostring(t)
+function mod_utils.table_tostring(t)
     if type(t) ~= "table" then
         return tostring(t)
     end
@@ -155,8 +157,8 @@ end
 --- 获取模组调试信息
 ---@param config table 模组配置表
 ---@return string 格式化的模组信息字符串
-function mod_utils:get_debug_info(config)
-    local game_version = self:table_tostring(config.game_version)
+function mod_utils.get_debug_info(config)
+    local game_version = mod_utils.table_tostring(config.game_version)
     local o = "\n"
 
     local function f(...)
@@ -178,16 +180,16 @@ end
 
 ---检查并返回包含可用模组的表
 ---@return table 降序排序的表, table 升序排序的表
-function mod_utils:check_get_available_mods()
+function mod_utils.check_get_available_mods(main_config)
     local mods_data = {}
 
-    local mod_subdirs = self:get_subdirs("mods", function(name, path)
-        return not table.contains(self.not_mod_path, name)
+    local mod_subdirs = mod_utils.get_subdirs("mods", function(name, path)
+        return not table.contains(not_mod_path, name)
     end)
 
     for _, mod_data in ipairs(mod_subdirs) do
         -- 加载模组配置文件
-        local config = require(self.ppref .. mod_data.path .. ".config")
+        local config = require(ppref .. mod_data.path .. ".config")
 
         -- 检查是否是兼容游戏版本
         if type(config.game_version) == "string" and config.game_version == KR_GAME or type(config.game_version) == "table" and table.contains(config.game_version, KR_GAME) then
@@ -202,7 +204,7 @@ function mod_utils:check_get_available_mods()
         else
             -- 不是兼容的游戏版本
             log.error("Mod '%s' is not compatible. Required game version: %s", config.name,
-                self:table_tostring(config.game_version) or "unknown", config.name)
+                mod_utils.table_tostring(config.game_version) or "unknown", config.name)
         end
     end
 
@@ -228,7 +230,7 @@ end
 ---若动画表中removed为真将会移除动画
 ---@param t table 表
 ---@return table 增加的动画, table 删除的动画
-function mod_utils:a_db_reset(t)
+function mod_utils.a_db_reset(t)
     local added_a = {}
     local deleted_k = {}
 
@@ -284,13 +286,79 @@ function mod_utils:a_db_reset(t)
     return added_a, deleted_k
 end
 
+---应用因子，根据是否为表智能赋值
+---@param t table 表
+---@param k string 键
+---@param factor number 因子
+---@return boolean 是否成功
+function mod_utils.apply_factor(t, k, factor)
+    if factor == 1 or not t[k] then
+        return false
+    end
+
+    local value = t[k]
+    local value_type = type(value)
+
+    if value_type == "table" then
+        for i = 1, #value do
+            local v = value[i]
+
+            value[i] = v * factor
+        end
+    elseif value_type == "number" then
+        t[k] = math.ceil(value * factor)
+    end
+
+    return true
+end
+
+---应用因子，赋值所有近战攻击，远程攻击，技能
+---@param t table 表
+---@param k string 键
+---@param factor number 因子
+---@return boolean 是否成功
+function mod_utils.mixed_apply_factor(t, k, factor)
+    if not t[k] or factor == 1 then
+        return false
+    end
+
+    local success = false
+
+    if t.melee then
+        for _, a in ipairs(t.melee.attacks) do
+            if a.cooldown then
+                success = mod_utils.apply_factor(a, k, factor)
+            end
+        end
+    end
+
+    if t.ranged then
+        for _, a in ipairs(t.ranged.attacks) do
+            if a.cooldown then
+                success = mod_utils.apply_factor(a, k, factor)
+            end
+        end
+    end
+
+    if t.timed_attacks then
+        for _, a in ipairs(t.timed_attacks.list) do
+            if a.cooldown then
+                success = mod_utils.apply_factor(a, k, factor)
+            end
+        end
+    end
+
+    if not success then
+        return false
+    end
+
+    return true
+end
+
 --[[
 以下是将一些模块与函数设为全局便于使用
 --]]
 
-if not IS_KR5 then
-    require("gg_views_custom")
-end
 require("klove.kui")
 require("klua.table")
 signal = require("hump.signal")
@@ -313,6 +381,8 @@ U = require("utils")
 
 if IS_KR5 then
     balance = require("data.balance.balance")
+else
+    require("gg_views_custom")
 end
 
 --- 帧转秒
@@ -332,8 +402,7 @@ end
 --- 创建模板
 --- @param name string 模板名
 --- @param ref string 派生的模板
---- @return table
---- @see E:register_t
+--- @return table 模板引用
 function RT(name, ref)
     return E:register_t(name, ref)
 end
@@ -342,7 +411,6 @@ end
 --- @param name string 模板名
 --- @param ... string 组件名
 --- @return nil
---- @see E:add_comps
 function AC(name, ...)
     return E:add_comps(name, ...)
 end
@@ -350,7 +418,6 @@ end
 --- 深拷贝组件
 --- @param c_name string 组件名
 --- @return table
---- @see E:clone_c
 function CC(c_name)
     return E:clone_c(c_name)
 end
@@ -358,35 +425,31 @@ end
 --- 索引模板
 --- @param name string 模板名
 --- @return table
---- @see E:get_template
 function T(name)
     return E:get_template(name)
 end
 
 --- 创建实体
 --- @param t string 模板名
---- @return table
---- @see E:create_entity
+--- @return table 实体引用
 function create_entity(t)
     return E:create_entity(t)
 end
 
---- 将实体放到插入队列
+--- 将实体增加到插入队列
 --- @param store table game.store
 --- @param e table 实体表
 --- @return nil
---- @see simulation:queue_insert_entity
 function queue_insert(store, e)
-    simulation:queue_insert_entity(e)
+    return simulation:queue_insert_entity(e)
 end
 
 --- 将实体加入移除队列
 --- @param store table game.store
 --- @param e table 实体表
 --- @return nil
---- @see simulation:queue_remove_entity
 function queue_remove(store, e)
-    simulation:queue_remove_entity(e)
+    return simulation:queue_remove_entity(e)
 end
 
 --- 将伤害实体加入伤害队列
@@ -394,7 +457,7 @@ end
 --- @param damage table 实体表
 --- @return nil
 function queue_damage(store, damage)
-    table.insert(store.damage_queue, damage)
+    return table.insert(store.damage_queue, damage)
 end
 
 return mod_utils

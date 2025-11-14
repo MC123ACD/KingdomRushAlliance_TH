@@ -35,7 +35,6 @@ end
 function my_hook.E.load(load, self)
 	load(self)
 
-	TH_revise:game_settings()
 	TH_revise:templates()
 	TH_revise:game_gui_data()
 end
