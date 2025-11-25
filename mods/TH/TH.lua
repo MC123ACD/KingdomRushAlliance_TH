@@ -28,7 +28,7 @@ local my_hook = {}
 
 setmetatable(my_hook, mod_utils.auto_table_mt)
 
-function my_hook:init()
+function my_hook:init(mod_data)
 	HOOK(E, "load", self.E.load)
 end
 
